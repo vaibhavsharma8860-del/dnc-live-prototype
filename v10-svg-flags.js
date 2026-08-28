@@ -8,7 +8,7 @@ v10FlagStyle.textContent=`
 document.head.appendChild(v10FlagStyle);
 
 function v10FlagSvg(country){
- const common='viewBox="0 0 30 20" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"';
+ const common='viewBox="0 0 30 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"';
  const flags={
   'Iran':`<svg ${common}><rect width="30" height="6.67" fill="#239f40"/><rect y="6.67" width="30" height="6.66" fill="#fff"/><rect y="13.33" width="30" height="6.67" fill="#da0000"/><circle cx="15" cy="10" r="1.6" fill="#da0000"/></svg>`,
   'North Korea':`<svg ${common}><rect width="30" height="20" fill="#024fa2"/><rect y="3" width="30" height="14" fill="#fff"/><rect y="4" width="30" height="12" fill="#ed1c27"/><circle cx="10" cy="10" r="4" fill="#fff"/><path d="M10 6.7l.8 2.1 2.2.1-1.7 1.4.6 2.2-1.9-1.2-1.9 1.2.6-2.2L7 8.9l2.2-.1z" fill="#ed1c27"/></svg>`,
@@ -22,17 +22,21 @@ function v10FlagSvg(country){
  return flags[country]||`<svg ${common}><rect width="30" height="20" fill="#eef2f4"/><circle cx="15" cy="10" r="4" fill="#87939c"/></svg>`;
 }
 
-/* Replace v9 emoji output at its source and refresh any already-rendered flag nodes. */
+/* v9 owns the RLC decoration lifecycle. Replace only its flag renderer. */
 v9Flag=function(country){return v10FlagSvg(country)};
-function v10RefreshFlags(){
+
+/* One guarded refresh handles any RLC rows already present when this patch loads. */
+function v10RefreshFlagsOnce(){
  document.querySelectorAll('.v9-country-name').forEach(w=>{
   const name=(w.querySelector('span:last-child')?.textContent||'').trim();
   const flag=w.querySelector('.v9-country-flag');
-  if(flag&&name)flag.innerHTML=v10FlagSvg(name);
+  if(flag&&name&&!flag.querySelector('svg'))flag.innerHTML=v10FlagSvg(name);
  });
  const title=document.querySelector('.v9-country-title');
- if(title){const name=(title.querySelector('span:last-child')?.textContent||'').trim();const flag=title.querySelector('.v9-country-flag');if(flag&&name)flag.innerHTML=v10FlagSvg(name)}
+ if(title){
+  const name=(title.querySelector('span:last-child')?.textContent||'').trim();
+  const flag=title.querySelector('.v9-country-flag');
+  if(flag&&name&&!flag.querySelector('svg'))flag.innerHTML=v10FlagSvg(name);
+ }
 }
-const v10FlagObserver=new MutationObserver(v10RefreshFlags);
-v10FlagObserver.observe(document.getElementById('app'),{childList:true,subtree:true});
-setTimeout(v10RefreshFlags,0);
+setTimeout(v10RefreshFlagsOnce,0);
