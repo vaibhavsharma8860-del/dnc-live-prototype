@@ -1,0 +1,13 @@
+/* RLC record detail: keep country-level metadata separate from associated experts. */
+const v20Style=document.createElement('style');v20Style.textContent=`
+.v19-rlc-experts{margin:0!important;padding:22px 30px 24px!important;border-top:1px solid var(--border);background:#fff}.v19-rlc-experts h3{margin:0 0 6px!important;font-size:14px!important;font-weight:600!important;color:var(--text-primary)}.v19-rlc-experts p{margin:0 0 14px!important;font-size:12px!important;line-height:18px!important;color:var(--text-secondary)}.v19-mini-table{width:100%!important;border-collapse:separate!important;border-spacing:0!important;border:1px solid var(--border)!important;border-radius:10px!important;overflow:hidden!important;background:#fff}.v19-mini-table th{background:var(--surface-subtle)!important;padding:11px 14px!important;font-size:12px!important;font-weight:600!important;color:var(--text-secondary)!important;border-bottom:1px solid var(--border)!important}.v19-mini-table td{padding:12px 14px!important;font-size:12px!important;line-height:18px!important;border-top:0!important;border-bottom:1px solid var(--border)!important;vertical-align:middle!important}.v19-mini-table tbody tr:last-child td{border-bottom:0!important}.v19-mini-table th:first-child,.v19-mini-table td:first-child{padding-left:14px!important}.v19-mini-table th:last-child,.v19-mini-table td:last-child{padding-right:14px!important}.v19-rlc-experts+.modal-footer,.v19-rlc-experts+.restriction-modal-footer{margin-top:0!important;border-top:1px solid var(--border)!important}
+`;document.head.appendChild(v20Style);
+
+const v20InfoOriginal=v5InfoRows;v5InfoRows=function(r){let rows=v20InfoOriginal(r);if(r&&r._kind==='rlc'){
+ const allowed=new Set(['Restriction reason','Reference','Region','Last broadcast','Policy state']);
+ rows=rows.filter(([label])=>allowed.has(label));
+ }return rows};
+
+function v20CleanExistingRlcInfo(){if(state.view!=='rlc')return;const modalEl=document.querySelector('.restriction-modal');if(!modalEl)return;const title=(modalEl.querySelector('h2')?.textContent||'').trim();const r=(state.rlcRecords||[]).find(x=>x.country===title);if(!r)return;const card=[...modalEl.querySelectorAll('.record-card,.info-card,.detail-card')].find(x=>/record information/i.test(x.textContent||''));if(!card)return;const labels=['Nature of engagement','Associated expert','Expert e-mail','Expert ID','Expert LinkedIn'];[...card.querySelectorAll('dt')].forEach(dt=>{if(labels.includes((dt.textContent||'').trim()))dt.closest('div')?.remove()});}
+function v20Decorate(){v20CleanExistingRlcInfo()}
+const v20Obs=new MutationObserver(v20Decorate);v20Obs.observe(document.getElementById('app'),{childList:true,subtree:true});setTimeout(v20Decorate,0);
