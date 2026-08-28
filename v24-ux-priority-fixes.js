@@ -8,11 +8,30 @@ state.v24CdncRelation=state.v24CdncRelation||'';state.v24ParentError=state.v24Pa
 const v24OpenModalBase=openModal;openModal=function(type,subtype=null){if(type==='CDNC'){state.v24CdncRelation='';state.v24ParentError='';state.v19CdncParentChecked=false;state.v19CdncSubsidiaryChecked=false;state.modalParentCompany='';}return v24OpenModalBase(type,subtype)};
 
 v19FixCdncAdd=function(grid){
+ const signature=`${state.v24CdncRelation}|${state.v24ParentError?'error':'ok'}`;
+ const existingGroup=grid.querySelector('.v24-relation-group');
+ const existingWrap=grid.querySelector('.v24-parent-wrap');
+ const wantsWrap=state.v24CdncRelation==='subsidiary';
+ if(grid.dataset.v24CdncSignature===signature&&existingGroup&&Boolean(existingWrap)===wantsWrap)return;
  ['modal-parent-company','modal-subsidiary'].forEach(id=>grid.querySelector('#'+id)?.closest('label.field')?.remove());
  grid.querySelector('.v19-check-group')?.remove();grid.querySelector('.v19-parent-wrap')?.remove();
- let group=grid.querySelector('.v24-relation-group');if(!group){group=document.createElement('div');group.className='v24-relation-group';const reason=grid.querySelector('#modal-reason')?.closest('label.field');grid.insertBefore(group,reason||null)}
- group.innerHTML=`<span class="v24-relation-label">Company relationship</span><div class="v24-relation-options"><label class="v24-radio"><input type="radio" name="v24-cdnc-relation" value="parent" ${state.v24CdncRelation==='parent'?'checked':''}> Parent company</label><label class="v24-radio"><input type="radio" name="v24-cdnc-relation" value="subsidiary" ${state.v24CdncRelation==='subsidiary'?'checked':''}> Specific subsidiary</label></div>`;
- let wrap=grid.querySelector('.v24-parent-wrap');if(state.v24CdncRelation==='subsidiary'){if(!wrap){wrap=document.createElement('div');wrap.className='v24-parent-wrap';wrap.innerHTML=`<label class="field field-wide"><span>Parent Company</span><input id="v19-parent-company-input" autocomplete="off" placeholder="Search stored company names" class="${state.v24ParentError?'input-error':''}" value="${esc(state.modalParentCompany||'')}">${state.v24ParentError?`<small>${esc(state.v24ParentError)}</small>`:''}</label>`;group.after(wrap)}}else if(wrap)wrap.remove();
+ let group=grid.querySelector('.v24-relation-group');
+ if(!group){
+  group=document.createElement('div');group.className='v24-relation-group';
+  group.innerHTML=`<span class="v24-relation-label">Company relationship</span><div class="v24-relation-options"><label class="v24-radio"><input type="radio" name="v24-cdnc-relation" value="parent"> Parent company</label><label class="v24-radio"><input type="radio" name="v24-cdnc-relation" value="subsidiary"> Specific subsidiary</label></div>`;
+  const reason=grid.querySelector('#modal-reason')?.closest('label.field');grid.insertBefore(group,reason||null);
+ }
+ const parentRadio=group.querySelector('input[value="parent"]'),subRadio=group.querySelector('input[value="subsidiary"]');
+ if(parentRadio)parentRadio.checked=state.v24CdncRelation==='parent';
+ if(subRadio)subRadio.checked=state.v24CdncRelation==='subsidiary';
+ let wrap=grid.querySelector('.v24-parent-wrap');
+ if(wantsWrap){
+  if(!wrap){wrap=document.createElement('div');wrap.className='v24-parent-wrap';wrap.innerHTML=`<label class="field field-wide"><span>Parent Company</span><input id="v19-parent-company-input" autocomplete="off" placeholder="Search stored company names" value="${esc(state.modalParentCompany||'')}"><small class="v24-parent-error"></small></label>`;group.after(wrap)}
+  const input=wrap.querySelector('#v19-parent-company-input');if(input&&document.activeElement!==input)input.value=state.modalParentCompany||'';
+  const error=wrap.querySelector('.v24-parent-error');if(error){error.textContent=state.v24ParentError||'';error.style.display=state.v24ParentError?'block':'none'}
+  input?.classList.toggle('input-error',Boolean(state.v24ParentError));
+ }else if(wrap)wrap.remove();
+ grid.dataset.v24CdncSignature=signature;
 };
 
 const v24ModalContinueBase=modalContinue;modalContinue=async function(){if(state.addType==='CDNC'&&state.v24CdncRelation==='subsidiary'&&!(state.modalParentCompany||'').trim()){state.v24ParentError='Select a parent company.';render();return;}state.v24ParentError='';return v24ModalContinueBase()};
