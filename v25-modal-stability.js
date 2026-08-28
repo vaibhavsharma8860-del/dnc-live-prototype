@@ -17,10 +17,16 @@ v6EnsureIdncFields=function(){
  if(!company.isConnected||!email.isConnected){const after=nameLabel||typeLabel;if(after?.nextSibling){grid.insertBefore(company,after.nextSibling);grid.insertBefore(email,company.nextSibling);}else{grid.append(company,email);}}
 
  let identifier=grid.querySelector('#modal-person-identifier')?.closest('label.field');
- if(isLead){if(identifier)identifier.remove();}
- else{
-  if(!identifier){identifier=document.createElement('label');identifier.className='field field-wide';identifier.innerHTML=`<span>Expert ID</span><input id="modal-person-identifier" placeholder="Enter expert ID" value="${esc(state.modalPersonIdentifier||'')}">`;const reason=grid.querySelector('#modal-reason')?.closest('label.field');if(reason)grid.insertBefore(identifier,reason);else grid.append(identifier);}
-  else{const label=identifier.querySelector(':scope > span');if(label&&label.textContent!=='Expert ID')label.textContent='Expert ID';const input=identifier.querySelector('input');if(input&&input.placeholder!=='Enter expert ID')input.placeholder='Enter expert ID';}
+ if(isLead){
+  email.classList.add('field-wide');
+  if(identifier)identifier.remove();
+ }else{
+  email.classList.remove('field-wide');
+  if(!identifier){identifier=document.createElement('label');identifier.className='field';identifier.innerHTML=`<span>Expert ID</span><input id="modal-person-identifier" placeholder="Enter expert ID" value="${esc(state.modalPersonIdentifier||'')}">`;}
+  identifier.classList.remove('field-wide');
+  const label=identifier.querySelector(':scope > span');if(label&&label.textContent!=='Expert ID')label.textContent='Expert ID';
+  const input=identifier.querySelector('input');if(input&&input.placeholder!=='Enter expert ID')input.placeholder='Enter expert ID';
+  if(email.nextElementSibling!==identifier)email.after(identifier);
  }
  const nameSpan=nameLabel?.querySelector(':scope > span');const wanted=isLead?'Lead Full Name':'Expert Full Name';if(nameSpan&&nameSpan.textContent!==wanted)nameSpan.textContent=wanted;
 };
